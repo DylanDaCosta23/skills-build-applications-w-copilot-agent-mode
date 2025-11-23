@@ -18,6 +18,7 @@ from django.urls import path, include
 from rest_framework import routers
 from .views import UserViewSet, TeamViewSet, ActivityViewSet, WorkoutViewSet, LeaderboardViewSet, api_root
 
+
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'teams', TeamViewSet)
@@ -25,8 +26,21 @@ router.register(r'activities', ActivityViewSet)
 router.register(r'workouts', WorkoutViewSet)
 router.register(r'leaderboard', LeaderboardViewSet)
 
+from django.conf import settings
+from django.http import JsonResponse
+import os
+
+def api_base_url(request):
+    codespace_name = os.environ.get('CODESPACE_NAME', None)
+    if codespace_name:
+        url = f"https://{codespace_name}-8000.app.github.dev/api/"
+    else:
+        url = request.build_absolute_uri('/api/')
+    return JsonResponse({'api_base_url': url})
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', api_root, name='api-root'),
-    path('', include(router.urls)),
+    path('api/base-url/', api_base_url, name='api-base-url'),
+    path('api/', api_root, name='api-root'),
+    path('api/', include(router.urls)),
 ]
